@@ -50,7 +50,7 @@ class Risk:
         ra=((y/y[0])-1)
         return ((ra[-1]**(252/len(ra)))- FreeRate)/(y.pct_change().std()*sqrt(252))
 
-print(Risk(['BBAS3.SA','BBDC3.SA'],'2022-03-12').Hist())
-print(Risk('BBAS3.SA','2022-03-12').Vol('hist','Dayli',30))
-print(Risk('BBAS3.SA','2023-01-01').Mean(30))
-print(Risk('BBAS3.SA','1900-01-01').Sharpe(0.1365))
+print(Risk(['BBAS3.SA','BBDC3.SA'],).Hist())
+print(Risk('BBAS3.SA').Vol(kind='hist',type='Dayli',window=30))
+print(Risk('BBAS3.SA').Mean(window=30))
+print(Risk('BBAS3.SA').Sharpe(FreeRate=0.1365))

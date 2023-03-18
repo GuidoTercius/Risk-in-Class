@@ -20,19 +20,19 @@ class Risk:
         self.window = window
         if kind == 'hist':
             if window == '':
-                if type == 'Dayli':
+                if type == 'Daily':
                     return('{:.2%}'.format(yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().std()))
                 elif type == 'Annual':
                     return('{:.2%}'.format(yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().std()*sqrt(252)))
                 else:
-                    return(str('{:.2%}'.format(yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().std()))+' is the dayli volatility'   )
+                    return(str('{:.2%}'.format(yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().std()))+' is the daily volatility'   )
             elif window != '':
-                if type == 'Dayli':
+                if type == 'Daily':
                     return '{:.2%}'.format(((yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().rolling(window=window).std())).dropna()[-1])
                 elif type == 'Annual':
                     return '{:.2%}'.format((yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().rolling(window=window).std()*sqrt(252)).dropna()[-1])
                 else:
-                    return(str('{:.2%}'.format(yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().std()))+' is the dayli volatility'   )       
+                    return(str('{:.2%}'.format(yf.download(self.stock,self.start)['Adj Close'].ffill().pct_change().std()))+' is the daily volatility'   )       
         else:
             print('We havent made this kind of Volatility')
     def Mean(self,window):
@@ -51,6 +51,6 @@ class Risk:
         return ((ra[-1]**(252/len(ra)))- FreeRate)/(y.pct_change().std()*sqrt(252))
 
 print(Risk(['BBAS3.SA','BBDC3.SA'],).Hist())
-print(Risk('BBAS3.SA').Vol(kind='hist',type='Dayli',window=30))
+print(Risk('BBAS3.SA').Vol(kind='hist',type='Daily',window=30))
 print(Risk('BBAS3.SA').Mean(window=30))
 print(Risk('BBAS3.SA').Sharpe(FreeRate=0.1365))

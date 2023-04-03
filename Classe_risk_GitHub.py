@@ -9,7 +9,7 @@ import datetime
 import sys
 
 class Risk:
-    def __init__(self,stock,start='1900-01-01', end=datetime.today()): ### What self is doing is: Every time a method is called he stored permanently for each object
+    def __init__(self,stock,start=datetime.datetime.today()-datetime.timedelta(days=3650), end=datetime.datetime.today()): ### What self is doing is: Every time a method is called he stored permanently for each object
         self.stock = stock
         self.start=start
         self.end= end

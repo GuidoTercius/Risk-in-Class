@@ -9,12 +9,6 @@ import numpy as np
 import datetime
 import sys
 
-# p=yf.download('BBAS3.SA',start=datetime.datetime.today()-datetime.timedelta(days=3650))['Adj Close'].dropna()
-# p=pd.DataFrame(p)
-# p['Log return']=((p['Adj Close']/p['Adj Close'].shift(1))).apply(log)
-
-# print(p)
-# sys.exit()
 class Risk:
     def __init__(self,stock,start=datetime.datetime.today()-datetime.timedelta(days=3650), end=datetime.datetime.today()): ### What self is doing is: Every time a method is called he stored permanently for each object
         self.stock = stock

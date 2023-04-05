@@ -130,7 +130,7 @@ class Risk:
                     var1=Vn_1**2 ### Variance of n-1!        |
                     u2=pow(p['Log return'][-2],2) ### Power of the penultimate return
                     V_EWMA = sqrt((Lambda*var1) + (1-Lambda)*u2)*sqrt(252)
-                    return '{:.2%}'.format(V_EWMA)               
+                    return '{:.2%}'.format(V_EWMA)       
         else:
             print('We havent made this kind of Volatility')
     def Mean(self,element='Price',window=''):

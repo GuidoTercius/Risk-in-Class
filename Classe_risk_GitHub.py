@@ -18,14 +18,14 @@ class Risk:
         return(yf.download(self.stock,self.start)['Adj Close'].dropna())
     def Return(self):
         return  self.Hist().pct_change().dropna()
-    def Vol(self,kind='hist',type='Dayli',window='',Lambda=0.94):
+    def Vol(self,kind='hist',type='Daily',window='',Lambda=0.94):
         self.kind = kind
         self.type = type
         self.window = window
         self.Lambda = Lambda
         if kind == 'hist':
             if window == '':
-                if type == 'Dayli':
+                if type == 'Daily':
                     return('{:.2%}'.format(self.Return().std()))
                 elif type == 'Weekly':
                     return('{:.2%}'.format(self.Return().std()*sqrt(5)))                
@@ -34,9 +34,9 @@ class Risk:
                 elif type == 'Annual':
                     return('{:.2%}'.format(self.Return().std()*sqrt(252)))
                 else:
-                    return(str('{:.2%}'.format(self.Return().std()))+' is the dayli volatility'   )
+                    return(str('{:.2%}'.format(self.Return().std()))+' is the daily volatility'   )
             elif window != '':
-                if type == 'Dayli':
+                if type == 'Daily':
                     return '{:.2%}'.format(((self.Return().rolling(window=window).std())).dropna()[-1])
                 elif type == 'Weekly':
                     return '{:.2%}'.format((self.Return().rolling(window=window).std()*sqrt(5)).dropna()[-1])
@@ -45,92 +45,37 @@ class Risk:
                 elif type == 'Annual':
                     return '{:.2%}'.format((self.Return().rolling(window=window).std()*sqrt(252)).dropna()[-1])
                 else:
-                    return(str('{:.2%}'.format(self.Return().std()))+' is the dayli volatility'   )       
+                    return(str('{:.2%}'.format(self.Return().std()))+' is the Daily volatility'   )       
         elif kind == 'EWMA':
-            if window == '':
-                if type == 'Dayli':            
+            if window == '':        
                     p=self.Hist()
                     p=pd.DataFrame(p)
                     p['Log return']=((p['Adj Close']/p['Adj Close'].shift(1))).apply(log)
-                    N=len(p['Adj Close'])            
-                    M=len(p['Log return'])
-                    u=p['Log return'].mean()  
-                    p['∑']=p['Log return']-u
-                    for j in range(len(p['∑'])):
-                        if j <= 0:
-                            p['∑'][j]=0
+                    p['Vol EWMA'] = np.nan
+                    for a in range(1,len(p['Adj Close'])):
+                        if a == 1: 
+                            p['Vol EWMA'][a]=0
+                        elif a == 2:  
+                            var1=(p['Log return'][0:a+1].std())**2  ### The power of std of Log return 0 to now ###  Variance of n!  
+                            u2=pow(p['Log return'][a],2)            ### The 
+                            p['Vol EWMA'][a] = sqrt((Lambda*var1) + (1-Lambda)*u2) 
+                        
                         else:
-                            p['∑'][j]=pow((p['Log return'][j] - u),2)
-                            # p['∑'][j]=pow((p['∑'][j]),2)
-                    Vol=sqrt((1/(M-1))*(p['∑'].sum())) ### Volatility is the square root of variance
-                    Vn_1=p['Log return'][:-1].std()    ### Volatility of n-1!                                      ^     
-                    var1=Vn_1**2 ### Variance of n-1!        |
-                    u2=pow(p['Log return'][-2],2) ### Power of the penultimate return
-                    V_EWMA = sqrt((Lambda*var1) + (1-Lambda)*u2)
-                    return '{:.2%}'.format(V_EWMA)
+                            var1=(p['Vol EWMA'][(a-1)])**2 ### Variance of n-1!  
+                            u2=pow(p['Log return'][a-1],2)
+                            p['Vol EWMA'][a] = sqrt((Lambda*var1) + (1-Lambda)*u2)
+                    V_EWMA = p['Vol EWMA']
+            if self.type == 'Daily':    
+                return (V_EWMA)
                 
-                if type == 'Weekly': 
-                    p=self.Hist()
-                    p=pd.DataFrame(p)
-                    p['Log return']=((p['Adj Close']/p['Adj Close'].shift(1))).apply(log)
-                    N=len(p['Adj Close'])            
-                    M=len(p['Log return'])
-                    u=p['Log return'].mean()  
-                    p['∑']=p['Log return']-u
-                    for j in range(len(p['∑'])):
-                        if j <= 0:
-                            p['∑'][j]=0
-                        else:
-                            p['∑'][j]=pow((p['Log return'][j] - u),2)
-                            # p['∑'][j]=pow((p['∑'][j]),2)
-                    Vol=sqrt((1/(M-1))*(p['∑'].sum())) ### Volatility is the square root of variance
-                    Vn_1=p['Log return'][:-1].std()    ### Volatility of n-1!                                      ^     
-                    var1=Vn_1**2 ### Variance of n-1!        |
-                    u2=pow(p['Log return'][-2],2) ### Power of the penultimate return
-                    V_EWMA = sqrt((Lambda*var1) + (1-Lambda)*u2)*sqrt(5)
-                    return '{:.2%}'.format(V_EWMA)
+            elif type == 'Weekly': 
+                return (V_EWMA*sqrt(5))
                 
-                if type == 'Monthly': 
-                    p=self.Hist()
-                    p=pd.DataFrame(p)
-                    p['Log return']=((p['Adj Close']/p['Adj Close'].shift(1))).apply(log)
-                    N=len(p['Adj Close'])            
-                    M=len(p['Log return'])
-                    u=p['Log return'].mean()  
-                    p['∑']=p['Log return']-u
-                    for j in range(len(p['∑'])):
-                        if j <= 0:
-                            p['∑'][j]=0
-                        else:
-                            p['∑'][j]=pow((p['Log return'][j] - u),2)
-                            # p['∑'][j]=pow((p['∑'][j]),2)
-                    Vol=sqrt((1/(M-1))*(p['∑'].sum())) ### Volatility is the square root of variance
-                    Vn_1=p['Log return'][:-1].std()    ### Volatility of n-1!                                      ^     
-                    var1=Vn_1**2 ### Variance of n-1!        |
-                    u2=pow(p['Log return'][-2],2) ### Power of the penultimate return
-                    V_EWMA = sqrt((Lambda*var1) + (1-Lambda)*u2)*sqrt(20)
-                    return '{:.2%}'.format(V_EWMA)
+            elif type == 'Monthly': 
+                return (V_EWMA*sqrt(20))
                 
-                if type == 'Annual': 
-                    p=self.Hist()
-                    p=pd.DataFrame(p)
-                    p['Log return']=((p['Adj Close']/p['Adj Close'].shift(1))).apply(log)
-                    N=len(p['Adj Close'])            
-                    M=len(p['Log return'])
-                    u=p['Log return'].mean()  
-                    p['∑']=p['Log return']-u
-                    for j in range(len(p['∑'])):
-                        if j <= 0:
-                            p['∑'][j]=0
-                        else:
-                            p['∑'][j]=pow((p['Log return'][j] - u),2)
-                            # p['∑'][j]=pow((p['∑'][j]),2)
-                    Vol=sqrt((1/(M-1))*(p['∑'].sum())) ### Volatility is the square root of variance
-                    Vn_1=p['Log return'][:-1].std()    ### Volatility of n-1!                                      ^     
-                    var1=Vn_1**2 ### Variance of n-1!        |
-                    u2=pow(p['Log return'][-2],2) ### Power of the penultimate return
-                    V_EWMA = sqrt((Lambda*var1) + (1-Lambda)*u2)*sqrt(252)
-                    return '{:.2%}'.format(V_EWMA)       
+            elif type == 'Annual': 
+                return (V_EWMA*sqrt(252))       
         else:
             print('We havent made this kind of Volatility')
     def Mean(self,element='Price',window=''):
@@ -159,10 +104,3 @@ class Risk:
     def VaR(self,probability=0.05):
         self.probabilty=probability
         return '{:.2%}'.format(np.quantile(self.Return(),probability))
-print(Risk(['BBAS3.SA','BBDC3.SA'],'2022-03-12').Hist())
-print(Risk(['BBAS3.SA','BBDC3.SA'],'2022-03-12').Return())
-print(Risk('BBAS3.SA','2022-03-12').Vol('hist','Annual'))
-print(Risk('BBAS3.SA').Vol(kind='EWMA',type='Annual'))
-print(Risk('BBAS3.SA','2023-01-01').Mean('return'))
-print(Risk('BBAS3.SA','1900-01-01').Sharpe())
-print(Risk('BRL=X','2023-01-01').VaR())

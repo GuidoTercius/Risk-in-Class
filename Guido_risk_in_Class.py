@@ -25,15 +25,15 @@ class Risk:
         if kind == 'hist':
             if window == '':
                 if type == 'Daily':
-                    return('{:.2%}'.format(self.Return().std()))
+                    return(self.Return().std())
                 elif type == 'Weekly':
-                    return('{:.2%}'.format(self.Return().std()*sqrt(5)))                
+                    return(self.Return().std()*sqrt(5))               
                 elif type == 'Monthly':
-                    return('{:.2%}'.format(self.Return().std()*sqrt(20))) 
+                    return(self.Return().std()*sqrt(20)) 
                 elif type == 'Annual':
-                    return('{:.2%}'.format(self.Return().std()*sqrt(252)))
+                    return(self.Return().std()*sqrt(252))
                 else:
-                    return(str('{:.2%}'.format(self.Return().std()))+' is the daily volatility'   )
+                    return(str(self.Return().std())+' is the daily volatility'   )
             elif window != '':
                 if type == 'Daily':
                     return ((self.Return().rolling(window=window).std())).dropna()
@@ -141,6 +141,12 @@ class Risk:
             return MDD
         elif kind == 'Min':
             return MDD.min()
+    def Beta(self,Bench):
+        self.Bench=Bench
+        p = self.Return()
+        b = yf.download(Bench,self.start)['Adj Close'].pct_change()
+        Beta = p.cov(b)/b.var()
+        return Beta
     def graph(self,obj,titre="",yl="",xl='Date'):
         
         self.obj=obj
@@ -152,4 +158,4 @@ class Risk:
         plt.gcf().autofmt_xdate()
         plt.xlabel(xl)
         plt.ylabel(yl)
-        plt.show()
+        plt.show()     
